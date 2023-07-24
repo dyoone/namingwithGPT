@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>브랜드 네이밍</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <div id="mainContainer">
+        <div id="introContainer">
+            <div class="stage" id="product">
+                <span class="stage-label">어떤 상품을 판매하는 브랜드인가요?</span>
+                <textarea  placeholder="" class="stage-textarea"></textarea>
+            </div>
+            <div class="stage" id="identity" style="display: none">
+                <span class="stage-label">브랜드의 철학을 작성해주세요.</span>
+                <textarea  placeholder="" class="stage-textarea"></textarea>
+            </div>
+            <div class="stage" id="target" style="display: none">
+                <span class="stage-label">타겟 고객층의 나이대와 성별을 알려주세요.</span>
+                <textarea  placeholder="" class="stage-textarea"></textarea>
+            </div>
+            <div class="stage" id="favoritePhrase" style="display: none">
+                <span class="stage-label">없으시다면 넘기셔도 됩니다.</span>
+                <textarea  placeholder="좋아하는 브랜드를 작성해주세요." class="stage-textarea"></textarea>
+                <textarea  placeholder="해당 브랜드의 어떤 점이 좋은가요?" class="stage-textarea"></textarea>
+            </div>
+            <div class="stage" id="story" style="display: none">
+                <span class="stage-label">브랜드 스토리를 작성해주세요.</span>
+                <textarea  placeholder="" class="stage-textarea"></textarea>
+            </div>
+            <div class="stage" id="naming" style="display: none">
+                <button type="menu">추상적 네임</button>
+                <button type="menu">서술적 네임</button>
+                <button type="menu">암시적 네임</button>
+            </div>
+    
+            <div>
+                <button id='nextBtn'>다음</button>
+            </div>
+        </div>
+    </div>
+    <div id="chatContainer" style="display: none">
+    </div>
+    <script type="module" src="./src/nextStage.js"></script>
+    <script type="module" src="./src/fetch.js"></script>
+    <script type="module" src="./src/fonts.js"></script>
+    <script type="module" src="./src/selectBtn.js"></script>
+</body>
+</html>

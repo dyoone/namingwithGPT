@@ -1,0 +1,370 @@
+const messageInput = document.getElementById('messageInput');
+let messageElement;
+let userMessages=[];
+let assistantMessages=[];
+let selectedButton = null;
+let type=''
+let fontsData={}
+let isProcessing = false; // 이벤트 핸들러 실행 중인지 여부를 나타내는 변수
+let description={}  
+
+function selectButton(button) {
+  // Remove the "selected" class from the previously selected button
+  if (selectedButton) {
+    selectedButton.classList.remove("selected");
+  }
+
+  // Add the "selected" class to the clicked button
+  button.classList.add("selected");
+
+  type=button.textContent
+  // Update the selectedButton variable
+  selectedButton = button;
+}
+
+
+async function fetchData(message) {
+  try {
+      const response = await fetch('http://localhost:3000/fortuneTell', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+                  userMessages: userMessages, 
+                  assistantMessages: assistantMessages,
+                  formData: formData,
+              })
+      });
+
+      if (!response.ok) {
+          throw new Error('Request failed with status ' + response.status);
+      }
+
+      const data = await response.json();
+      return data.assistant;
+  } catch (error) {
+      return '';
+  }
+}
+
+function fetchFontsData() {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch('http://localhost:3000/google-fonts');
+      const data = await response.json();
+      resolve(data);
+    } catch (error) {
+      console.error('Error fetching fonts data:', error);
+      reject(error);
+    }
+  });
+}
+
+
+fetchFontsData()
+  .then(data => {
+    fontsData = data; 
+    console.log(fontsData)
+  });
+
+
+function renderMessage(role, content) {
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message', role);
+    messageElement.textContent = content;
+    chatContainer.appendChild(messageElement);
+    chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll to the bottom
+    if(role==='assistant'){
+        chatContainer.removeChild(loaderDiv)
+    }
+}
+
+const chatContainer = document.getElementById('chatContainer');
+function renderCard(wordData) {
+    chatContainer.removeChild(loaderDiv);
+    chatContainer.appendChild(recycleBtn);
+    let row = document.createElement('div');
+    row.classList.add('row');
+    console.log(fontsData)
+    const sansFonts = fontsData.sansFonts;
+    const serifFonts = fontsData.serifFonts;
+    for (let i = 0; i < wordData.length; i++) {
+      const randomIndex = Math.random() < 0.5 ? 0 : 1; // 50%의 확률로 0 또는 1을 선택
+      const selectedVariable = randomIndex === 0 ? sansFonts : serifFonts; // 선택된 변수
+      const min = 0; // 최소값
+      const max = selectedVariable.length; // 최대값
+      const random = Math.floor(Math.random() * (max - min + 1)) + min;
+      const link=`https://fonts.googleapis.com/css2?family=${encodeURIComponent(selectedVariable[random])}&display=swap`
+      const messageElement = document.createElement('div');
+      const linkElement = document.createElement('link');
+      messageElement.style.fontFamily = `'${selectedVariable[random]}', ${selectedVariable.length === sansFonts.length ? 'sans-serif' : 'serif'}`;
+
+      linkElement.href = link;
+      linkElement.rel = 'stylesheet';
+
+      document.head.appendChild(linkElement);
+      messageElement.classList.add('namingCard');
+      messageElement.dataset.key = wordData[i]
+      messageElement.textContent = wordData[i];
+      row.appendChild(messageElement);
+
+      
+      
+      
+
+      if ((i + 1) % 3 === 0 || i === wordData.length - 1) {
+        chatContainer.appendChild(row);
+        row = document.createElement('div');
+        row.classList.add('row');
+      }
+    }
+
+
+    chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll to the bottom
+  }
+  
+/*async function sendMessage(event) {
+    event.preventDefault();
+    const message = messageInput.value;
+    userMessages.push(message)
+    messageInput.value = '';
+    messageInput.disabled = true; // Disable the input element
+    if (message.trim() !== '') {
+        renderMessage('user', message);
+        chatContainer.appendChild(loaderDiv);
+        const assistantResponse = await fetchData(message);
+        assistantMessages.push(assistantResponse)
+        renderMessage('assistant', assistantResponse);
+        assistantMessages=[]
+    }
+    messageInput.disabled = false; // Enable the input element again
+}*/
+
+
+window.addEventListener('beforeunload', function (event) {
+    event.preventDefault();
+  });
+  
+
+//next
+const stages = document.querySelectorAll('.stage');
+let currentStageIndex = 0;
+const formData = {}
+
+const nextBtn=document.getElementById('nextBtn')
+async function next(){
+    const currentStage = stages[currentStageIndex];
+    currentStage.classList.add('fade-out');
+    const textarea = currentStage.querySelectorAll('textarea');
+    const values = Array.from(textarea).map(v=>v.value)
+    const stageId = currentStage.id;
+    currentStage.style.display = 'none';
+    type=='' ? formData[stageId] = values : formData[stageId] = type
+    // Increment the stage index to move to the next stage
+    currentStageIndex++;
+    if(currentStageIndex===stages.length-1){
+        document.getElementById('nextBtn').textContent = '완료'
+    }
+    // Show the next stage with fade-in animation
+    if(currentStageIndex<stages.length){
+    const nextStage = stages[currentStageIndex];
+    nextStage.style.display = 'block';
+    nextStage.classList.add('fade-in');
+    }else if(currentStageIndex>=stages.length-1){
+        document.getElementById('mainContainer').style.display = 'none'
+        document.getElementById('chatContainer').style.display = 'flex'
+        chatContainer.appendChild(loaderDiv);
+        const timeoutPromise = new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve('timeout');
+          }, 15000); // 10초 후에 타임아웃으로 처리
+            });
+
+    const assistantResponsePromise = fetchData(); // 비동기 작업을 수행하는 프로미스
+
+    const resultPromise = await Promise.race([timeoutPromise, assistantResponsePromise]);
+    if(resultPromise!=='timeout'){
+      const result = await resultPromise;
+      assistantMessages.push(result);
+      console.log(assistantMessages);
+      const resultData = assistantMessages[0].match(/[^\d.]+/g).map(v => v.replace('\n', ''));
+      renderCard(resultData);
+      assistantMessages = [];
+    }else if(resultPromise==='timeout'){
+          chatContainer.removeChild(loaderDiv);
+          chatContainer.appendChild(recycleBtn);
+    }  
+    }
+}
+nextBtn.addEventListener('click',next())
+function resize() {
+    let textareaList = document.getElementsByClassName("stage-textarea");
+    Array.from(textareaList).forEach(textarea => {
+        textarea.style.height = "62px";
+        let scrollHeight = textarea.scrollHeight;
+        let style = window.getComputedStyle(textarea);
+        let borderTop = parseInt(style.borderTop);
+        let borderBottom = parseInt(style.borderBottom);
+      
+        textarea.style.height = (scrollHeight + borderTop + borderBottom) + "px";
+      })
+}
+
+window.addEventListener("load", resize);
+window.onresize = resize;
+
+
+
+
+
+
+
+const loaderDiv = document.createElement('div');
+loaderDiv.id = 'loader';
+loaderDiv.classList.add('loader');
+
+const spinnerIcon = document.createElement('i');
+spinnerIcon.id = 'spinner';
+spinnerIcon.classList.add('fas', 'fa-spinner');
+
+loaderDiv.appendChild(spinnerIcon);
+
+
+
+const recycleBtn = document.createElement('button')
+recycleBtn.classList.add('recycle-button')
+const recycleIcon = document.createElement('i')
+recycleIcon.classList.add('fas', 'fa-recycle')
+
+recycleBtn.appendChild(recycleIcon)
+
+recycleBtn.addEventListener('click', async function() {
+  console.log('ok')
+  description={}
+  const rows = document.querySelectorAll('.row');
+  rows.forEach(row => row.remove());
+  const fontLinks = document.querySelectorAll('.font-link');
+  fontLinks.forEach(link => link.remove());
+  //기다리는 UI 추가
+  userMessages=[]
+  const assistantResponse = fetchData();
+
+  const timeoutPromise = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve('timeout');
+    }, 10000);
+      });
+
+
+  const resultPromise = await Promise.race([timeoutPromise, assistantResponse]);
+  if(resultPromise!=='timeout'){
+  assistantMessages.push(assistantResponse)
+  const result = assistantMessages[0].match(/[^\d.]+/g).map(v => v.replace('\n', ''));
+  reRenderCard(result)
+  assistantMessages=[];} else{console.log('다시 요청해주세요')}
+  });
+
+
+
+
+
+function reRenderCard(wordData) {
+  const sansFonts = fontsData.sansFonts;
+  const serifFonts = fontsData.serifFonts;
+  let row = document.createElement('div');
+    row.classList.add('row');
+  for (let i = 0; i < wordData.length; i++) {
+    const randomIndex = Math.random() < 0.5 ? 0 : 1; // 50%의 확률로 0 또는 1을 선택
+    const selectedVariable = randomIndex === 0 ? sansFonts : serifFonts; // 선택된 변수
+    const min = 0; // 최소값
+    const max = selectedVariable.length; // 최대값
+    const random = Math.floor(Math.random() * (max - min + 1)) + min;
+    const link=`https://fonts.googleapis.com/css2?family=${encodeURIComponent(selectedVariable[random])}&display=swap`
+    messageElement = document.createElement('div');
+    const linkElement = document.createElement('link');
+    
+    messageElement.style.fontFamily = `'${selectedVariable[random]}', ${selectedVariable.length === sansFonts.length ? 'sans-serif' : 'serif'}`;
+    linkElement.classList.add('font-link');
+    linkElement.href = link;
+    linkElement.rel = 'stylesheet';
+
+    document.head.appendChild(linkElement);
+    messageElement.classList.add('namingCard');
+    messageElement.dataset.key = wordData[i]
+    messageElement.textContent = wordData[i]; 
+    row.appendChild(messageElement);
+    if ((i + 1) % 3 === 0 || i === wordData.length - 1) {
+      chatContainer.appendChild(row);
+      row = document.createElement('div');
+      row.classList.add('row');
+    }
+  }
+ ;
+
+  chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll to the bottom
+}
+
+// Append the loader div to the chat container div
+
+
+ chatContainer.addEventListener('click', async (event) => {
+    if (isProcessing) return; // 이벤트 핸들러 실행 중이면 중복 실행 방지
+    
+    const target = event.target.closest('.namingCard'); // 클릭된 요소의 최상위 부모(.namingCard)를 찾음
+
+    if (!target) return; // 클릭된 요소가 .namingCard가 아니면 종료
+
+    isProcessing = true; // 이벤트 핸들러 실행 중으로 설정
+    const key = target.dataset.key;
+
+    try {
+      if (!description[key]) {
+        userMessages.push(key);
+        target.classList.add('rotating');
+
+        const timeoutPromise = new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve('timeout')
+          }, 15000); // 10초 후에 타임아웃으로 처리
+        });
+
+        const fetchDataPromise =  fetchData(); // 비동기 작업을 수행하는 프로미스
+
+        const result = await Promise.race([timeoutPromise, fetchDataPromise]);
+        if (result ==='timeout') {
+          // 타임아웃 또는 fetchDataPromise에서 발생한 에러 처리
+          target.classList.remove('rotating');
+          userMessages=[]
+        } else {
+          const assistantResponse = result;
+          if(assistantResponse===''){
+            target.classList.remove('rotating');
+            userMessages=[]
+          }else {
+          description[key] = assistantResponse;
+          assistantMessages.push(assistantResponse);
+          target.classList.remove('rotating');
+          target.textContent = assistantResponse;
+          target.style.fontSize = '11px';
+          userMessages=[];
+          assistantMessages=[]
+        }
+        }
+      } else {
+        if (target.textContent.length > 20) {
+          target.textContent = key;
+          target.style.fontSize = '';
+        } else {
+          target.textContent = description[key];
+          target.style.fontSize = '11px';
+        }
+      }
+    } catch (error) {
+      console.log('hi')
+    } finally {
+      console.log(key)
+      isProcessing = false; // 이벤트 핸들러 실행 완료
+    }
+  });
+
