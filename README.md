@@ -38,6 +38,6 @@ dom에 event를 listener을 하면 캡쳐링에 의해서 하위 요소까지 �
 ![동적](https://github.com/dyoone/namingwithGPT/assets/121990995/c5362ccd-290b-4cd8-a6e0-9cbc6bbf6f39)
 
 
-동적으로 생성한 class명이 같은 div에 차이점이 있어야 했다. 그래서 texcontext로 접근을 하려고 했으나 이 textcontext도 동적으로 바뀌는 상황이였다.
+동적으로 생성한 class명이 같은 div를 구분 했어야 했다. 그래서 texcontext로 접근을 하려고 했으나 이 textcontext도 동적으로 바뀌는 상황이였다.
 그래서 처음에 render된 textcontext를 data-set에 할당함으로 각 div를 구분가능하게 만들었다.
 
