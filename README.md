@@ -1,5 +1,7 @@
 # namingwithGPT
 gpt를 활용한 namig 앱을 만들면서 공부한 기록
+(코드 짧은 요약, 코드를 작성하면서 했던 고민들은 블로그에)
+
 
 
 ![에러처리](https://github.com/dyoone/namingwithGPT/assets/121990995/7bf9a8c8-5a11-4b28-96c2-3a1f726ab8e9)
@@ -32,4 +34,10 @@ dom에 event를 listener을 하면 캡쳐링에 의해서 하위 요소까지 �
 폰트를 랜덤으로 하고 싶었고 크게 2가지 종류의 폰트가 있었다.
 그래서  50%의 확률로 선택이 되기를 원했고 그 이후에는 배열의 index를 랜덤으로 선택하게 하였다.
 
+
+![동적](https://github.com/dyoone/namingwithGPT/assets/121990995/c5362ccd-290b-4cd8-a6e0-9cbc6bbf6f39)
+
+
+동적으로 생성한 class명이 같은 div에 차이점이 있어야 했다. 그래서 texcontext로 접근을 하려고 했으나 이 textcontext도 동적으로 바뀌는 상황이였다.
+그래서 처음에 render된 textcontext를 data-set에 할당함으로 각 div를 구분가능하게 만들었다.
 
